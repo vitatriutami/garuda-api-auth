@@ -1,11 +1,16 @@
+// Import dependencies
 const pool = require("../../database/postgres/pool");
-const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
-const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
-const RepliesTableTestHelper = require("../../../../tests/RepliesTableTestHelper");
-const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
-const ServerTestHelper = require("../../../../tests/ServerTestHelper");
+
+// Import server and container
 const container = require("../../container");
 const createServer = require("../createServer");
+
+// Import test helpers
+const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
+const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
+const ServerTestHelper = require("../../../../tests/ServerTestHelper");
+const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
+const RepliesTableTestHelper = require("../../../../tests/RepliesTableTestHelper");
 
 describe("/threads endpoint", () => {
   afterAll(async () => {
@@ -17,7 +22,7 @@ describe("/threads endpoint", () => {
     await UsersTableTestHelper.cleanTable();
   });
 
-  describe("when POST /threads", () => {
+  describe("POST /threads", () => {
     it("should return 201 and create a new thread", async () => {
       const requestPayload = {
         title: "thread-title-test",
