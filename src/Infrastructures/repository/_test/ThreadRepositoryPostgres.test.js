@@ -51,6 +51,26 @@ describe("ThreadRepositoryPostgres", () => {
         username: "dicoding",
       });
     });
+
+    it("should throw NotFoundError when thread id format is invalid", async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(
+        threadRepositoryPostgres.getThreadById("123")
+      ).rejects.toThrowError("Thread tidak ditemukan");
+    });
+
+    it("should throw NotFoundError when thread id does not exist", async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(
+        threadRepositoryPostgres.getThreadById("non-existent-id")
+      ).rejects.toThrowError("Thread tidak ditemukan");
+    });
   });
 
   describe("verifyThreadAvailability", () => {
@@ -80,6 +100,14 @@ describe("ThreadRepositoryPostgres", () => {
         username: "dicoding",
       });
     });
+    it("should throw NotFoundError when thread id does not exist", async () => {
+      // Arrange
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {});
+
+      // Action & Assert
+      await expect(
+        threadRepositoryPostgres.verifyThreadAvailability("non-existent-id")
+      ).rejects.toThrowError("Thread tidak ditemukan");
+    });
   });
 });
-

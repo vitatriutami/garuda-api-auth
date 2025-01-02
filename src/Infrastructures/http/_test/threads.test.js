@@ -1,184 +1,170 @@
-const pool = require('../../database/postgres/pool')
-const ThreadsTableTestHelper = require('../../../../tests/ThreadsTableTestHelper')
-const CommentsTableTestHelper = require('../../../../tests/CommentsTableTestHelper')
-const RepliesTableTestHelper = require('../../../../tests/RepliesTableTestHelper')
-const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper')
-const ServerTestHelper = require('../../../../tests/ServerTestHelper')
-const container = require('../../container')
-const createServer = require('../createServer')
+const pool = require("../../database/postgres/pool");
+const ThreadsTableTestHelper = require("../../../../tests/ThreadsTableTestHelper");
+const CommentsTableTestHelper = require("../../../../tests/CommentsTableTestHelper");
+const RepliesTableTestHelper = require("../../../../tests/RepliesTableTestHelper");
+const UsersTableTestHelper = require("../../../../tests/UsersTableTestHelper");
+const ServerTestHelper = require("../../../../tests/ServerTestHelper");
+const container = require("../../container");
+const createServer = require("../createServer");
 
-describe('/threads endpoint', () => {
-	afterAll(async () => {
-		await pool.end()
-	})
+describe("/threads endpoint", () => {
+  afterAll(async () => {
+    await pool.end();
+  });
 
-	afterEach(async () => {
-		await ThreadsTableTestHelper.cleanTable()
-		await UsersTableTestHelper.cleanTable()
-	})
+  afterEach(async () => {
+    await ThreadsTableTestHelper.cleanTable();
+    await UsersTableTestHelper.cleanTable();
+  });
 
-	describe('when POST /threads', () => {
-		it('should response 201 and persisted threads', async () => {
-			// Arrange
-			const requestPayload = {
-				title: 'dicoding1',
-				body: 'ini payload test body',
-			}
+  describe("when POST /threads", () => {
+    it("should return 201 and create a new thread", async () => {
+      const requestPayload = {
+        title: "thread-title-test",
+        body: "this is a body for testing thread creation",
+      };
 
-			// eslint-disable-next-line no-undef
-			const accessToken = await ServerTestHelper.getAccessToken()
-			const server = await createServer(container)
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
 
-			// Action
-			const response = await server.inject({
-				method: 'POST',
-				url: `/threads`,
-				payload: requestPayload,
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-			// Assert
-			const responseJson = JSON.parse(response.payload)
-			expect(response.statusCode).toEqual(201)
-			expect(responseJson.status).toEqual('success')
-			expect(responseJson.data.addedThread).toBeDefined()
-		})
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toBe(201);
+      expect(responseJson.status).toBe("success");
+      expect(responseJson.data.addedThread).not.toBeUndefined();
+    });
 
-		it('should response 200 and persisted detail threads', async () => {
-			// eslint-disable-next-line no-undef
-			const accessToken = await ServerTestHelper.getAccessToken()
-			const server = await createServer(container)
+    it("should return 200 and thread details", async () => {
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
 
-			await ThreadsTableTestHelper.addThread({
-				id: 'thread-123',
-				title: 'dicoding',
-				body: 'ini body thread',
-				date: '2022-04-19 04:18:51.806',
-				owner: 'user-123',
-			})
+      const currentDate = new Date().toISOString();
 
-			await CommentsTableTestHelper.addComment({
-				id: 'comment-123',
-				content: 'dicoding',
-				date: '2022-04-19 04:18:51.806',
-				threadId: 'thread-123',
-				owner: 'user-123',
-			})
+      await ThreadsTableTestHelper.addThread({
+        id: "thread-123",
+        title: "test-thread",
+        body: "thread content for testing",
+        date: currentDate,
+        owner: "user-123",
+      });
 
-			await RepliesTableTestHelper.addReply({
-				id: 'reply-123',
-				content: 'dicoding',
-				date: '2022-04-19 04:18:51.806',
-				owner: 'user-123',
-				thread: 'thread-123',
-				comment: 'comment-123',
-			})
-			const threadId = 'thread-123'
+      await CommentsTableTestHelper.addComment({
+        id: "comment-123",
+        content: "test comment",
+        date: currentDate,
+        threadId: "thread-123",
+        owner: "user-123",
+      });
 
-			// Action
-			const response = await server.inject({
-				method: 'GET',
-				url: `/threads/${threadId}`,
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+      await RepliesTableTestHelper.addReply({
+        id: "reply-123",
+        content: "test reply",
+        date: currentDate,
+        owner: "user-123",
+        thread: "thread-123",
+        comment: "comment-123",
+      });
 
-			// Assert
-			const responseJson = JSON.parse(response.payload)
-			expect(response.statusCode).toEqual(200)
-			expect(responseJson.status).toEqual('success')
-			expect(responseJson.data.thread).toBeDefined()
-			expect(responseJson.data.thread.comments).toBeDefined()
-			expect(responseJson.data.thread.comments[0].replies).toBeDefined()
-		})
+      const threadId = "thread-123";
 
-		it('should response 400 when request payload not contain needed property', async () => {
-			// Arrange
-			const requestPayload = {
-				body: 'ini payload test body',
-			}
+      const response = await server.inject({
+        method: "GET",
+        url: `/threads/${threadId}`,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-			const accessToken = await ServerTestHelper.getAccessToken()
-			const server = await createServer(container)
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toBe(200);
+      expect(responseJson.status).toBe("success");
+      expect(responseJson.data.thread).not.toBeUndefined();
+      expect(responseJson.data.thread.comments).not.toBeUndefined();
+      expect(responseJson.data.thread.comments[0].replies).not.toBeUndefined();
+    });
 
-			// Action
-			const response = await server.inject({
-				method: 'POST',
-				url: `/threads`,
-				payload: requestPayload,
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+    it("should return 400 when required property is missing", async () => {
+      const requestPayload = {
+        body: "missing title in payload",
+      };
 
-			// Assert
-			const responseJson = JSON.parse(response.payload)
-			expect(response.statusCode).toEqual(400)
-			expect(responseJson.status).toEqual('fail')
-			expect(responseJson.message).toEqual(
-				'harus mengirimkan payload dengan properti yang lengkap'
-			)
-		})
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
 
-		it('should response 400 when request payload not meet data type specification', async () => {
-			// Arrange
-			const requestPayload = {
-				title: 'dicoding',
-				body: 123123,
-			}
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-			const accessToken = await ServerTestHelper.getAccessToken()
-			const server = await createServer(container)
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toBe(400);
+      expect(responseJson.status).toBe("fail");
+      expect(responseJson.message).toBe(
+        "harus mengirimkan payload dengan properti yang lengkap"
+      );
+    });
 
-			// Action
-			const response = await server.inject({
-				method: 'POST',
-				url: `/threads`,
-				payload: requestPayload,
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+    it("should return 400 when payload data type is incorrect", async () => {
+      const requestPayload = {
+        title: "thread-title",
+        body: 123456,
+      };
 
-			// Assert
-			const responseJson = JSON.parse(response.payload)
-			expect(response.statusCode).toEqual(400)
-			expect(responseJson.status).toEqual('fail')
-			expect(responseJson.message).toEqual(
-				'setiap payload harus bertipe string'
-			)
-		})
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
 
-		it('should response 400 when title more than 50 character', async () => {
-			// Arrange
-			const requestPayload = {
-				title: 'dicodingindonesiadicodingindonesiadicodingindonesiadicoding',
-				body: 'secret body test',
-			}
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
 
-			const accessToken = await ServerTestHelper.getAccessToken()
-			const server = await createServer(container)
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toBe(400);
+      expect(responseJson.status).toBe("fail");
+      expect(responseJson.message).toBe("setiap payload harus bertipe string");
+    });
 
-			// Action
-			const response = await server.inject({
-				method: 'POST',
-				url: `/threads`,
-				payload: requestPayload,
-				headers: {
-					Authorization: `Bearer ${accessToken}`,
-				},
-			})
+    it("should return 400 when thread title exceeds character limit", async () => {
+      const requestPayload = {
+        title:
+          "thisisaverylongtitlethatexceedsthemaximumcharacterlimitallowedfortitle",
+        body: "testing character limit on title field",
+      };
 
-			// Assert
-			const responseJson = JSON.parse(response.payload)
-			expect(response.statusCode).toEqual(400)
-			expect(responseJson.status).toEqual('fail')
-			expect(responseJson.message).toEqual(
-				'tidak dapat membuat thread baru karena karakter melebihi batas limit'
-			)
-		})
-	})
-})
+      const accessToken = await ServerTestHelper.getAccessToken();
+      const server = await createServer(container);
+
+      const response = await server.inject({
+        method: "POST",
+        url: `/threads`,
+        payload: requestPayload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const responseJson = JSON.parse(response.payload);
+      expect(response.statusCode).toBe(400);
+      expect(responseJson.status).toBe("fail");
+      expect(responseJson.message).toBe(
+        "tidak dapat membuat thread baru karena karakter melebihi batas limit"
+      );
+    });
+  });
+});

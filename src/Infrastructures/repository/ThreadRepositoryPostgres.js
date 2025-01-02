@@ -25,23 +25,27 @@ class ThreadRepositoryPostgres extends ThreadRepository {
   }
 
   async getThreadById(threadId) {
+    // Query untuk mendapatkan thread dengan username pemiliknya
     const query = {
       text: `
-      SELECT threads.id, threads.title, threads.body, threads.date, threads.owner, users.username
-      FROM threads
-      LEFT JOIN users ON threads.owner = users.id
-      WHERE threads.id = $1
-    `,
+        SELECT threads.id, threads.title, threads.body, threads.date, threads.owner, users.username
+        FROM threads
+        INNER JOIN users ON threads.owner = users.id
+        WHERE threads.id = $1
+      `,
       values: [threadId],
     };
 
     const result = await this._pool.query(query);
 
-    if (!result.rowCount) {
+    // Jika thread tidak ditemukan, lemparkan error
+    if (!result.rows.length) {
       throw new NotFoundError("Thread tidak ditemukan");
     }
 
-    return result.rows[0];
+    // Kembalikan data thread
+    const { id, title, body, date, owner, username } = result.rows[0];
+    return { id, title, body, date, owner, username };
   }
 
   async verifyThreadAvailability(threadId) {
@@ -56,7 +60,8 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     };
 
     const result = await this._pool.query(query);
-
+    
+    // Jika thread tidak ditemukan, lemparkan error
     if (!result.rowCount) {
       throw new NotFoundError("Thread tidak ditemukan");
     }

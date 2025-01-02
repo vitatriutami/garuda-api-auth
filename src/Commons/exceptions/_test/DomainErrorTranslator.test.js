@@ -3,6 +3,8 @@ const InvariantError = require('../InvariantError')
 
 describe('DomainErrorTranslator', () => {
 	it('should translate error correctly', () => {
+		
+		// AUTH DAN REGISTER
 		expect(
 			DomainErrorTranslator.translate(
 				new Error('REGISTER_USER.NOT_CONTAIN_NEEDED_PROPERTY')
@@ -70,6 +72,8 @@ describe('DomainErrorTranslator', () => {
 			)
 		).toStrictEqual(new InvariantError('refresh token harus string'))
 
+
+		// ADD THREAD
 		expect(
 			DomainErrorTranslator.translate(
 				new Error('ADD_THREAD.NOT_CONTAIN_NEEDED_PROPERTY')
@@ -96,6 +100,8 @@ describe('DomainErrorTranslator', () => {
 			)
 		)
 
+
+		// COMMENT
 		expect(
 			DomainErrorTranslator.translate(
 				new Error('ADD_COMMENT.NOT_CONTAIN_NEEDED_PROPERTY')
@@ -113,6 +119,8 @@ describe('DomainErrorTranslator', () => {
 			new InvariantError('setiap payload harus bertipe string')
 		)
 
+
+		// THREAD
 		expect(
 			DomainErrorTranslator.translate(
 				new Error('DELETE_THREAD_USE_CASE.NOT_CONTAIN_PARAMETER')
@@ -130,6 +138,8 @@ describe('DomainErrorTranslator', () => {
 			new InvariantError('setiap parameter harus bertipe string')
 		)
 
+
+		// LIKE
 		expect(
 			DomainErrorTranslator.translate(
 				new Error('ADD_LIKE.NOT_CONTAIN_NEEDED_PROPERTY')
@@ -145,6 +155,8 @@ describe('DomainErrorTranslator', () => {
 			new InvariantError('setiap parameter harus bertipe string')
 		)
 	})
+
+	// NOT NEEDED - ORIGINAL ERROR
 
 	it('should return original error when error message is not needed to translate', () => {
 		// Arrange
