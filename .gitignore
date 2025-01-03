@@ -3,3 +3,5 @@ package-lock.json
 .idea
 coverage
 .env
+forum-garuda-webserver.pem
+config/database/test.json
