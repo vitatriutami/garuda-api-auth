@@ -1,4 +1,4 @@
-Forum API
+Garuda Forum API
 =========
 
 This API serves as the backend for a forum application, allowing users to create threads, comment, reply to comments, and like comments. The API uses JWT authentication to secure certain endpoints.
