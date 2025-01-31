@@ -3,6 +3,12 @@ Garuda Forum API
 
 This API serves as the backend for a forum application, allowing users to create threads, comment, reply to comments, and like comments. The API uses JWT authentication to secure certain endpoints.
 
+Deployed API Endpoint
+------------
+
+The API is deployed and accessible at:
+https://wise-dragons-teach-bravely.a276.dcdg.xyz/
+
 Key Features
 ------------
 
